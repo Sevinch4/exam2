@@ -162,17 +162,10 @@ func (c carRepo) UpdateCarRoute(models.UpdateCarRoute) error {
 	route := models.UpdateCarRoute{
 		DepartureTime: time.Now(),
 	}
-	query := `WITH updated_cars AS (
-    				UPDATE created_at = $1
-  						  WHERE id = $4
-  					  RETURNING *
-				)
-				UPDATE drivers
-				SET from_city_id = $2, to_city_id = $3
-				WHERE id = (SELECT driver_id FROM updated_cars);
- `
+	query := `UPDATE drivers SET from_city_id = $1, to_city_id = $2
+                         FROM cars 
+               WHERE cars.driver_id = drivers.id AND cars.id = $3`
 	if _, err := c.db.Exec(query,
-		&route.DepartureTime,
 		&route.FromCityID,
 		&route.ToCityID,
 		&route.CarID); err != nil {
